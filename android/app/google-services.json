@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "980868120563",
+    "project_id": "careerclaritycompanion-fd4d1",
+    "storage_bucket": "careerclaritycompanion-fd4d1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:980868120563:android:357000e01d90919f2c1c86",
+        "android_client_info": {
+          "package_name": "com.example.careerclaritycompanion"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "980868120563-04gq1qd9insh7klsevl5hbdobbj4m6e1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.careerclaritycompanion",
+            "certificate_hash": "1b9133f27b161e4f4d8b4ef7087fbc6f7cdffff8"
+          }
+        },
+        {
+          "client_id": "980868120563-uun05lsdnek3hmtre1oo0i5pq7u8hnbq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrC3GvJ9aColzR0ldkeB2yRYBgD7lbRy0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "980868120563-uun05lsdnek3hmtre1oo0i5pq7u8hnbq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "980868120563-urkhj0gqqik7cvkbmh7016l4epug8j45.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.careerclaritycompanion"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

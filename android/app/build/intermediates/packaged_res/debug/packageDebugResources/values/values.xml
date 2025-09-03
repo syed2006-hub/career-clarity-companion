@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gcm_defaultSenderId" translatable="false">980868120563</string>
+    <string name="google_api_key" translatable="false">AIzaSyCrC3GvJ9aColzR0ldkeB2yRYBgD7lbRy0</string>
+    <string name="google_app_id" translatable="false">1:980868120563:android:357000e01d90919f2c1c86</string>
+    <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCrC3GvJ9aColzR0ldkeB2yRYBgD7lbRy0</string>
+    <string name="google_storage_bucket" translatable="false">careerclaritycompanion-fd4d1.firebasestorage.app</string>
+    <string name="project_id" translatable="false">careerclaritycompanion-fd4d1</string>
+    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        
+        <item name="android:windowBackground">@drawable/launch_background</item>
+    </style>
+    <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
+        <item name="android:windowBackground">?android:colorBackground</item>
+    </style>
+</resources>
