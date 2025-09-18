@@ -58,7 +58,7 @@ class _MainScreenState extends State<MainScreen> {
 
       // Bottom navigation using ConvexAppBar
       bottomNavigationBar: ConvexAppBar(
-        height: 70,
+        height: 60,
         style: TabStyle.reactCircle,
         backgroundColor: Colors.white,
         activeColor: Theme.of(context).colorScheme.secondary,

@@ -42,6 +42,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // General State
   bool _isLoading = false;
   String? _resumeFileName;
+  String? _selectedField; // in your State class
+  String? _selectedYear;
+
   String? _resumeUrl;
   String collegeId = '';
 
@@ -605,11 +608,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: DropdownButtonFormField<String>(
-                isExpanded: true, // critical
-                value:
-                    _fieldOfStudyController.text.isNotEmpty
-                        ? _fieldOfStudyController.text
-                        : null,
+                isExpanded: true,
+                value: _selectedField,
                 decoration: InputDecoration(
                   labelText: "Field of Study",
                   labelStyle: TextStyle(color: Colors.black),
@@ -636,37 +636,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         .map(
                           (field) => DropdownMenuItem<String>(
                             value: field,
-                            child: Text(
-                              field,
-                              overflow:
-                                  TextOverflow
-                                      .ellipsis, // prevent overflow text
-                            ),
+                            child: Text(field, overflow: TextOverflow.ellipsis),
                           ),
                         )
                         .toList(),
                 onChanged: (String? selectedField) {
-                  if (selectedField != null) {
-                    setState(() {
-                      _fieldOfStudyController.text = selectedField;
-                    });
-                  }
+                  setState(() {
+                    _selectedField = selectedField;
+                    _fieldOfStudyController.text = selectedField ?? "";
+                  });
                 },
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: DropdownButtonFormField<String>(
-                isExpanded: true, // critical
-                value:
-                    _fieldOfStudyController.text.isNotEmpty
-                        ? _fieldOfStudyController.text
-                        : null,
+                isExpanded: true,
+                value: _selectedYear,
                 decoration: InputDecoration(
-                  labelText: "Field of Study",
+                  labelText: "Year of Study",
                   labelStyle: TextStyle(color: Colors.black),
                   prefixIcon: Icon(
-                    Icons.science_outlined,
+                    Icons.school_outlined,
                     color: Colors.grey[600],
                   ),
                   border: OutlineInputBorder(
@@ -688,21 +679,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         .map(
                           (year) => DropdownMenuItem<String>(
                             value: year,
-                            child: Text(
-                              year,
-                              overflow:
-                                  TextOverflow
-                                      .ellipsis, // prevent overflow text
-                            ),
+                            child: Text(year, overflow: TextOverflow.ellipsis),
                           ),
                         )
                         .toList(),
-                onChanged: (String? selectedyear) {
-                  if (selectedyear != null) {
-                    setState(() {
-                      _yearOfStudy.text = selectedyear;
-                    });
-                  }
+                onChanged: (selectedYear) {
+                  setState(() {
+                    _selectedYear = selectedYear;
+                    _yearOfStudy.text = selectedYear ?? "";
+                  });
                 },
               ),
             ),

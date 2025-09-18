@@ -1,5 +1,8 @@
 import 'package:careerclaritycompanion/features/custom_widgets/confirmation_dialog.dart';
+import 'package:careerclaritycompanion/features/screens/add_achivements_page.dart';
+import 'package:careerclaritycompanion/features/screens/edit_user.dart';
 import 'package:careerclaritycompanion/features/screens/leader_board_screen.dart';
+import 'package:careerclaritycompanion/features/screens/project_add_page.dart';
 import 'package:careerclaritycompanion/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -70,17 +73,17 @@ class _CustomDrawerState extends State<CustomDrawer> {
           _buildDrawerTile(
             icon: Icons.edit,
             title: "Edit Profile",
-            page: LeaderboardScreen(),
+            page: EditUserPage(),
           ),
           _buildDrawerTile(
             icon: Icons.emoji_events,
             title: "Add Achievements",
-            page: LeaderboardScreen(),
+            page: AddAchievementPage(),
           ),
           _buildDrawerTile(
             icon: Icons.work,
             title: "Add Projects",
-            page: LeaderboardScreen(),
+            page: AddProjectPage(),
           ),
 
           const Spacer(),

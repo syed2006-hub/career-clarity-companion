@@ -3,12 +3,15 @@ import 'dart:ui'; // Required for lerpDouble
 import 'package:careerclaritycompanion/features/custom_widgets/custom_drawer.dart';
 import 'package:careerclaritycompanion/features/custom_widgets/fllutter_toast.dart';
 import 'package:careerclaritycompanion/service/clodinary_service/cloudinary_service.dart';
+import 'package:chewie/chewie.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:video_player/video_player.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -64,7 +67,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _pickAndUploadProfileUrl() async {
     try {
       final picker = ImagePicker();
       final pickedFile = await picker.pickImage(
@@ -126,7 +129,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   photoUrl: _photoUrl,
                   scaffoldkey: _scaffoldKey,
                   isUploading: _isUploading,
-                  onAvatarTap: _pickImage,
+                  onAvatarTap: _pickAndUploadProfileUrl,
                 ),
 
                 bottom: const TabBar(
@@ -316,7 +319,7 @@ class _CollapsingHeaderState extends State<_CollapsingHeader> {
                 top: 8,
                 right: 16,
                 child: IconButton(
-                  icon: const Icon(Icons.menu,color: Colors.white,),
+                  icon: const Icon(Icons.menu, color: Colors.white),
                   onPressed: () {
                     widget.scaffoldkey.currentState
                         ?.openDrawer(); // 👈 this opens drawer
@@ -427,29 +430,191 @@ class _PersonalInfoTab extends StatelessWidget {
   }
 }
 
+class _ProjectTab extends StatefulWidget {
+  final Map<String, dynamic>? userDetails;
+  const _ProjectTab({this.userDetails});
+
+  @override
+  State<_ProjectTab> createState() => _ProjectTabState();
+}
+
+class _ProjectTabState extends State<_ProjectTab> {
+  final Map<int, ChewieController> _controllers = {};
+
+  @override
+  void dispose() {
+    _controllers.forEach((key, controller) => controller.dispose());
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const Center(child: Text("Not logged in"));
+
+    return StreamBuilder<QuerySnapshot>(
+      stream:
+          FirebaseFirestore.instance
+              .collection("users")
+              .doc(user.uid)
+              .collection("projects")
+              .orderBy("timestamp", descending: true)
+              .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Text(
+              "No projects yet",
+              style: TextStyle(color: Colors.white54),
+            ),
+          );
+        }
+
+        final projects = snapshot.data!.docs;
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: projects.length,
+          itemBuilder: (context, index) {
+            final data = projects[index].data() as Map<String, dynamic>;
+            final videoUrl = data["videoUrl"] as String?;
+
+            // Create ChewieController only once
+            if (videoUrl != null && !_controllers.containsKey(index)) {
+              final videoController = VideoPlayerController.network(videoUrl);
+              _controllers[index] = ChewieController(
+                videoPlayerController: videoController,
+                autoPlay: false,
+                looping: false,
+                allowFullScreen: true,
+                showControls: true,
+              );
+            }
+
+            return Card(
+              color: const Color(0xff1e1e3f),
+              margin: const EdgeInsets.only(bottom: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (videoUrl != null)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Chewie(controller: _controllers[index]!),
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+                    Text(
+                      data["description"] ?? "",
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                    if (data["githubLink"] != null) ...[
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: () {
+                          launchUrl(Uri.parse(data["githubLink"]));
+                        },
+                        child: Text(
+                          data["githubLink"],
+                          style: const TextStyle(
+                            color: Colors.tealAccent,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
 class _AchievementsTab extends StatelessWidget {
   final Map<String, dynamic>? userDetails;
   const _AchievementsTab({this.userDetails});
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        "Achievements & Certifications",
-        style: TextStyle(color: Colors.white54),
-      ),
-    );
-  }
-}
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const Center(child: Text("Not logged in"));
 
-class _ProjectTab extends StatelessWidget {
-  final Map<String, dynamic>? userDetails;
-  const _ProjectTab({this.userDetails});
+    return StreamBuilder<QuerySnapshot>(
+      stream:
+          FirebaseFirestore.instance
+              .collection("users")
+              .doc(user.uid)
+              .collection("achievements")
+              .orderBy("timestamp", descending: true)
+              .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(
+            child: Text(
+              "No achievements yet",
+              style: TextStyle(color: Colors.white54),
+            ),
+          );
+        }
 
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text("Projects", style: TextStyle(color: Colors.white54)),
+        final achievements = snapshot.data!.docs;
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: achievements.length,
+          itemBuilder: (context, index) {
+            final data = achievements[index].data() as Map<String, dynamic>;
+            return Card(
+              color: const Color(0xff1e1e3f),
+              margin: const EdgeInsets.only(bottom: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (data["certificateUrl"] != null)
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(12),
+                      ),
+                      child: Image.network(
+                        data["certificateUrl"],
+                        fit: BoxFit.cover,
+                        height: 200,
+                        width: double.infinity,
+                      ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Text(
+                      data["description"] ?? "",
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

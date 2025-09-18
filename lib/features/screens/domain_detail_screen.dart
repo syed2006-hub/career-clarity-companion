@@ -390,6 +390,7 @@ class _DomainDetailScreenState extends State<DomainDetailScreen>
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
+
         final allInternships =
             snapshot.data!.docs.map((doc) {
               return JobListing.fromMap(doc.data() as Map<String, dynamic>);
@@ -406,22 +407,128 @@ class _DomainDetailScreenState extends State<DomainDetailScreen>
         if (filteredInternships.isEmpty) {
           return const Center(child: Text("No internships found"));
         }
+
         return ListView.builder(
           padding: const EdgeInsets.all(12),
           itemCount: filteredInternships.length,
           itemBuilder: (context, index) {
-            final job = filteredInternships[index];
-            return Card(
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              child: ListTile(
-                leading: Image.network(job.companyLogoUrl),
-                title: Text(job.title),
-                subtitle: Text("${job.companyName} • ${job.companyLocation}"),
-              ),
-            );
+            final intern = filteredInternships[index];
+            return _buildInternshipCard(context, intern); // ⬅️ Updated UI
           },
         );
       },
+    );
+  }
+
+  /// Builds a professional and informative card for an internship.
+  Widget _buildInternshipCard(BuildContext context, JobListing intern) {
+    // Helper method to launch URLs safely
+    Future<void> _launchUrl(String urlString) async {
+      final Uri url = Uri.parse(urlString);
+      if (!await canLaunchUrl(url)) {
+        // Optionally show a snackbar or alert to the user
+        print("Could not launch $urlString");
+        return;
+      }
+      await launchUrl(url, mode: LaunchMode.inAppBrowserView);
+    }
+
+    final theme = Theme.of(context);
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with company logo and info
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: CircleAvatar(
+                backgroundColor: Colors.grey[200],
+                backgroundImage:
+                    intern.companyLogoUrl.isNotEmpty
+                        ? NetworkImage(intern.companyLogoUrl)
+                        : null,
+                child:
+                    intern.companyLogoUrl.isEmpty
+                        ? const Icon(Icons.business, color: Colors.grey)
+                        : null,
+              ),
+              title: Text(
+                intern.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                'Company: ${intern.companyName}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Key details with icons
+            _InfoChip(
+              icon: Icons.location_on_outlined,
+              text: intern.companyLocation,
+            ),
+            const SizedBox(height: 6),
+            _InfoChip(icon: Icons.date_range, text: intern.postedAgo),
+            const SizedBox(height: 12),
+
+            // Action Button
+            Row(
+              children: [
+                const Spacer(),
+                ElevatedButton.icon(
+                  onPressed: () => _launchUrl(intern.url),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.secondary,
+                    foregroundColor: theme.colorScheme.onSecondary,
+                  ),
+                  icon: const Icon(Icons.open_in_new, color: Colors.white),
+                  label: const Text(
+                    "Apply Now",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A small widget to display an icon and text, used in the internship card.
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String text;
+
+  const _InfoChip({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.grey[600], size: 16),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ),
+      ],
     );
   }
 }
