@@ -9,7 +9,7 @@ class AppTheme {
 
     appBarTheme: AppBarTheme(
       surfaceTintColor: Colors.transparent,
-      backgroundColor: const Color(0xff1e1e3f),
+      backgroundColor:const Color(0xFF42382D),
       elevation: 0,
       titleTextStyle: TextStyle(
         color: Colors.white,
@@ -52,7 +52,7 @@ class AppTheme {
 
     colorScheme: ColorScheme.light(
       primary: Color(0xFFE6E6E6), // greyish white
-      secondary: const Color(0xff1e1e3f),
+      secondary: const Color(0xFF42382D),
     ),
 
     textTheme: GoogleFonts.poppinsTextTheme().copyWith(
@@ -90,7 +90,7 @@ class AppTheme {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
-        backgroundColor: const Color(0xff1e1e3f),
+        backgroundColor:const Color(0xFF42382D),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
       ),

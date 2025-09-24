@@ -1,4 +1,4 @@
-import 'package:careerclaritycompanion/features/screens/domain_list.dart';
+import 'package:careerclaritycompanion/features/screens/home/domain/domain_list.dart';
 import 'package:flutter/material.dart';
 
 class AllDomainScreen extends StatelessWidget {

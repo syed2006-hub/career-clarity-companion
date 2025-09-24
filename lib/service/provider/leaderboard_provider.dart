@@ -6,13 +6,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class LeaderboardFilter {
   final String collegeId;
   final String fieldOfStudy;
-  final String year; // 👈 year filter
+  final String year; // year filter
+  final String domain; // 👈 new domain filter
   final int selectedTabIndex; // 0=College, 1=Department
 
   LeaderboardFilter({
     required this.collegeId,
     required this.fieldOfStudy,
     required this.year,
+    this.domain = 'All Domains', // default value
     required this.selectedTabIndex,
   });
 
@@ -23,21 +25,22 @@ class LeaderboardFilter {
           runtimeType == other.runtimeType &&
           collegeId == other.collegeId &&
           fieldOfStudy == other.fieldOfStudy &&
-          year == other.year && // 👈 include year
+          year == other.year &&
+          domain == other.domain && // 👈 compare domain
           selectedTabIndex == other.selectedTabIndex;
 
   @override
   int get hashCode =>
       collegeId.hashCode ^
       fieldOfStudy.hashCode ^
-      year.hashCode ^ // 👈 include year
+      year.hashCode ^
+      domain.hashCode ^ // 👈 include domain
       selectedTabIndex.hashCode;
 }
 
 final leaderboardProvider = StreamProvider.family<
-  List<LeaderboardEntry>,
-  LeaderboardFilter
->((ref, filter) {
+    List<LeaderboardEntry>,
+    LeaderboardFilter>((ref, filter) {
   if (filter.collegeId.isEmpty) return Stream.value([]);
 
   final leaderboardRef = FirebaseFirestore.instance
@@ -63,11 +66,19 @@ final leaderboardProvider = StreamProvider.family<
     for (var deptId in departmentsToFetch) {
       Query studentsQuery = leaderboardRef.doc(deptId).collection("students");
 
+      // Filter by year
       if (filter.year != 'All Years') {
-        // 🔹 Correct field: yearOfStudy
         studentsQuery = studentsQuery.where(
           'yearOfStudy',
           isEqualTo: filter.year,
+        );
+      }
+
+      // Filter by domain
+      if (filter.domain != 'All Domains') {
+        studentsQuery = studentsQuery.where(
+          'maindomain', // make sure this matches your Firestore field
+          isEqualTo: filter.domain,
         );
       }
 
@@ -94,7 +105,7 @@ final leaderboardProvider = StreamProvider.family<
   // Initial fetch
   fetchLeaderboard();
 
-  // Optional: listen to department changes
+  // Listen to department changes
   final listener = leaderboardRef.snapshots().listen((_) => fetchLeaderboard());
 
   ref.onDispose(() {
@@ -104,6 +115,7 @@ final leaderboardProvider = StreamProvider.family<
 
   return controller.stream;
 });
+
 
 final userDetailsProvider = FutureProvider<Map<String, String>>((ref) async {
   final user = FirebaseAuth.instance.currentUser;

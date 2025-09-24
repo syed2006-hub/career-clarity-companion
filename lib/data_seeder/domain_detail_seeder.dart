@@ -8,47 +8,34 @@ class DomainSeeder {
   final AiChatSystem aiChatSystem = AiChatSystem();
 
   /// ===========================
-  /// Batch seed multiple domains dynamically
+  /// Seed domain with AI projects and internships
   /// ===========================
-  Future<void> seedDomains(String domainName) async {
-    await _seedSingleDomain(domainName);
-
-    print("✅ Finished seeding all domains.");
-  }
-
-  /// Seed a single domain
-  Future<void> _seedSingleDomain(String domainName) async {
+  Future<void> seedDomainProjects(String domainName) async {
     try {
+      // Ensure domain document exists
       await _ensureDomainDoc(domainName);
 
-      final prompt = _buildDomainPrompt(domainName);
-      final aiContent = await aiChatSystem.fetchDomainContent(prompt);
 
-      Map<String, dynamic> domainDetails = {};
+      // Generate AI projects
+      final projects = await aiChatSystem.generateAIProjects(domainName);
 
-      if (aiContent != null && aiContent.isNotEmpty) {
-        domainDetails = _parseAIResponse(aiContent);
+      // Save projects under domain -> projects
+      final projectsRef = firestore
+          .collection('domains')
+          .doc(domainName)
+          .collection('projects');
+
+      for (final project in projects) {
+        await projectsRef.add({
+          "themeTitle": project['themeTitle'],
+          "problemStatement": project['problemStatement'],
+          "createdAt": FieldValue.serverTimestamp(),
+        });
       }
 
-      // Use fallback if AI fails
-      if (domainDetails.isEmpty) {
-        print("⚠️ AI response invalid for '$domainName'. Using fallback.");
-        domainDetails = _fallbackDomainData(domainName);
-      }
-
-      // Save to Firestore
-      final domainRef = firestore.collection("domains").doc(domainName);
-      await domainRef.set({
-        "name": domainName,
-        "domainImgUrl": domainDetails["domainImgUrl"] ?? "",
-        "intro": domainDetails["intro"] ?? "",
-        "domainDetails": domainDetails,
-        "updatedAt": FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
-
-      print("✅ Seeded domain: $domainName");
+      print("✅ Seeded ${projects.length} projects for '$domainName'");
     } catch (e) {
-      print("❌ Error seeding '$domainName': $e");
+      print("❌ Error seeding projects: $e");
     }
   }
 
@@ -61,62 +48,75 @@ class DomainSeeder {
     }, SetOptions(merge: true));
   }
 
-  /// Strict AI prompt for structured JSON
-  String _buildDomainPrompt(String domainName) {
-    return """
-Generate a JSON object for the domain '$domainName'. 
-**Return valid JSON ONLY**, no extra text or explanations.
-The JSON must include:
-- intro (brief 10-15 line description)
-- branches (list with name, focus, technologies, goals)
-- expectedSalary (range by role)
-- types (different types of domain work)
-- futureScope
-- marketRate
-- usefulness
-- roadmap (step-by-step learning path)
-- domainImgUrl (optional)
-""";
-  }
+  /// Fetch internships for a domain
+  Future<List<Map<String, String>>> _fetchInternships(String domainName) async {
+    final snapshot =
+        await firestore
+            .collection('internships')
+            .where('domain', isEqualTo: domainName)
+            .get();
 
-  /// Parse AI response safely
-  Map<String, dynamic> _parseAIResponse(String aiText) {
-    try {
-      return jsonDecode(aiText);
-    } catch (_) {
-      // Extract JSON substring if AI added extra text
-      final jsonStart = aiText.indexOf('{');
-      final jsonEnd = aiText.lastIndexOf('}');
-      if (jsonStart != -1 && jsonEnd != -1 && jsonEnd > jsonStart) {
-        final jsonString = aiText.substring(jsonStart, jsonEnd + 1);
-        try {
-          return jsonDecode(jsonString);
-        } catch (_) {}
-      }
-    }
-    return {};
-  }
-
-  /// Fallback domain data if AI fails
-  Map<String, dynamic> _fallbackDomainData(String domainName) {
-    return {
-      "intro": "Learn about $domainName in detail.",
-      "branches": [],
-      "expectedSalary": {},
-      "types": [],
-      "futureScope": "",
-      "marketRate": "",
-      "usefulness": "",
-      "roadmap": [],
-      "domainImgUrl": "",
-    };
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return {
+        'title': data['title']?.toString() ?? 'Untitled',
+        'company': data['company']?.toString() ?? '',
+        'link': data['link']?.toString() ?? '',
+      };
+    }).toList();
   }
 }
 
 /// ================================
-/// AI Chat System for Domain Content
+/// Gemini AI Chat System for Projects
 /// ================================
 class AiChatSystem {
+  /// Generate 4 project themes for a domain
+  Future<List<Map<String, String>>> generateAIProjects(String domain) async {
+    final apiKey = dotenv.env['GEMINI_API_KEY'];
+    if (apiKey == null || apiKey.isEmpty) {
+      throw Exception("Gemini API key not found in .env");
+    }
+
+    final prompt = """
+Generate 4 innovative project themes for the domain "$domain".
+Return the result as a JSON array where each object has:
+- themeTitle
+- problemStatement
+Return only JSON, no extra text.
+""";
+
+    final model = GenerativeModel(model: "gemini-2.0-flash", apiKey: apiKey);
+    final response = await model.generateContent([Content.text(prompt)]);
+    String rawText = response.text ?? "[]";
+
+    // Strip any Markdown-style JSON fences (```json ... ```)
+    rawText = rawText.trim();
+    if (rawText.startsWith("```")) {
+      final firstNewline = rawText.indexOf('\n');
+      final lastFence = rawText.lastIndexOf("```");
+      if (firstNewline != -1 && lastFence != -1 && lastFence > firstNewline) {
+        rawText = rawText.substring(firstNewline + 1, lastFence).trim();
+      }
+    }
+
+    try {
+      final List<dynamic> listDynamic = json.decode(rawText);
+      return listDynamic.map<Map<String, String>>((p) {
+        final map = p as Map<String, dynamic>;
+        return {
+          'themeTitle': map['themeTitle']?.toString() ?? 'Untitled Theme',
+          'problemStatement': map['problemStatement']?.toString() ?? '',
+        };
+      }).toList();
+    } catch (e) {
+      throw Exception(
+        "Failed to parse AI projects JSON: $e\nRaw text:\n$rawText",
+      );
+    }
+  }
+
+  /// Optional: fetch domain content (existing method)
   Future<String?> fetchDomainContent(String prompt) async {
     final apiKey = dotenv.env['GEMINI_API_KEY'];
     if (apiKey == null || apiKey.isEmpty) {

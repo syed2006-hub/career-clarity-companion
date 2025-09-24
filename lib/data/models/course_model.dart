@@ -23,31 +23,22 @@ class CourseModel {
     required this.instructors,
   });
 
-  /// Create model from Udemy API
+  /// Create model from your asset JSON (list structure)
   factory CourseModel.fromUdemyJson(Map<String, dynamic> data) {
     return CourseModel(
-      id: data['id']?.toString() ?? '',
+      id: data['id']?.toString() ?? '', // JSON may not have id
       title: data['title'] ?? 'No Title',
       platform: "Udemy",
-      url: data['url'] != null ? "https://www.udemy.com${data['url']}" : '',
-      imageUrl:
-          (data['images'] != null && data['images'].isNotEmpty)
-              ? data['images'].last
-              : '',
-      price: data['purchase']?['price']?['price_string'] ?? 'Free',
-      summary:
-          (data['objectives_summary'] != null &&
-                  data['objectives_summary'].isNotEmpty)
-              ? data['objectives_summary'].join(" • ")
-              : data['headline'] ?? '',
-      rating: (data['rating'] ?? 0).toDouble(),
-      reviews: data['num_reviews'] ?? 0,
-      instructors:
-          data['instructors'] != null
-              ? List<String>.from(
-                data['instructors'].map((i) => i['display_name']),
-              )
-              : [],
+      url: data['url'] ?? '',
+      imageUrl: data['photo'] ?? '',
+      price: data['price'] ?? 'Free',
+      summary: '', // no summary in asset JSON
+      rating: double.tryParse(data['rating'] ?? "0.0") ?? 0.0,
+      reviews: int.tryParse(
+            (data['numRatings'] ?? "0").toString().replaceAll(RegExp(r'[^0-9]'), ''),
+          ) ??
+          0,
+      instructors: [], // asset JSON has no instructors
     );
   }
 
@@ -61,12 +52,12 @@ class CourseModel {
       imageUrl: map['imageUrl'] ?? '',
       price: map['price'] ?? 'Free',
       summary: map['summary'] ?? '',
-      rating: (map['rating'] ?? 0).toDouble(),
+      rating: (map['rating'] is double)
+          ? map['rating']
+          : double.tryParse(map['rating'].toString()) ?? 0.0,
       reviews: map['reviews'] ?? 0,
       instructors:
-          map['instructors'] != null
-              ? List<String>.from(map['instructors'])
-              : [],
+          map['instructors'] != null ? List<String>.from(map['instructors']) : [],
     );
   }
 

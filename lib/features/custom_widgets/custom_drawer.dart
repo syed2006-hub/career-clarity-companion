@@ -1,8 +1,9 @@
 import 'package:careerclaritycompanion/features/custom_widgets/confirmation_dialog.dart';
-import 'package:careerclaritycompanion/features/screens/add_achivements_page.dart';
-import 'package:careerclaritycompanion/features/screens/edit_user.dart';
-import 'package:careerclaritycompanion/features/screens/leader_board_screen.dart';
-import 'package:careerclaritycompanion/features/screens/project_add_page.dart';
+import 'package:careerclaritycompanion/features/screens/drawer_pages/add_achivements_page.dart';
+import 'package:careerclaritycompanion/features/screens/drawer_pages/edit_user.dart';
+import 'package:careerclaritycompanion/features/screens/drawer_pages/leader_board_screen.dart';
+import 'package:careerclaritycompanion/features/screens/drawer_pages/project_add_page.dart';
+import 'package:careerclaritycompanion/features/screens/drawer_pages/resume_page.dart';
 import 'package:careerclaritycompanion/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -16,10 +17,22 @@ class CustomDrawer extends StatefulWidget {
 }
 
 class _CustomDrawerState extends State<CustomDrawer> {
+  User? user;
+
+  @override
+  void initState() {
+    super.initState();
+    user = FirebaseAuth.instance.currentUser;
+  }
+
+  void _refreshUser() {
+    setState(() {
+      user = FirebaseAuth.instance.currentUser;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
     return Drawer(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       child: Column(
@@ -65,27 +78,31 @@ class _CustomDrawerState extends State<CustomDrawer> {
             ),
           ),
           _buildDrawerTile(
-            icon: Icons.leaderboard_sharp,
-            title: "Leader Board",
-            page: LeaderboardScreen(),
+            icon: Icons.leaderboard,
+            title: "LeaderBoard",
+            page: const LeaderboardScreen(),
           ),
           // 🔹 Drawer Items
           _buildDrawerTile(
             icon: Icons.edit,
             title: "Edit Profile",
-            page: EditUserPage(),
+            page: const EditUserPage(),
           ),
           _buildDrawerTile(
             icon: Icons.emoji_events,
             title: "Add Achievements",
-            page: AddAchievementPage(),
+            page: const AddAchievementPage(),
           ),
           _buildDrawerTile(
             icon: Icons.work,
             title: "Add Projects",
-            page: AddProjectPage(),
+            page: const AddProjectPage(),
           ),
-
+          _buildDrawerTile(
+            icon: Icons.picture_as_pdf,
+            title: "Resume Generator",
+            page: ResumeGeneratorPage(),
+          ),
           const Spacer(),
 
           // 🔹 Logout Button
@@ -137,10 +154,16 @@ class _CustomDrawerState extends State<CustomDrawer> {
       leading: Icon(icon, color: Theme.of(context).colorScheme.secondary),
       title: Text(title, style: Theme.of(context).textTheme.titleMedium),
       trailing: const Icon(Icons.arrow_right),
-      onTap:
-          () => Navigator.of(
-            context,
-          ).push(CupertinoPageRoute(builder: (context) => page)),
+      onTap: () async {
+        final updated = await Navigator.of(
+          context,
+        ).push(CupertinoPageRoute(builder: (context) => page));
+
+        if (updated == true) {
+          // 🔄 refresh the user object and rebuild drawer
+          _refreshUser();
+        }
+      },
     );
   }
 }

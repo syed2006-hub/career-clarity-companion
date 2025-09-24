@@ -1,7 +1,8 @@
-import 'package:careerclaritycompanion/features/screens/home_screen.dart';
-import 'package:careerclaritycompanion/features/screens/profile_screens.dart';
-import 'package:careerclaritycompanion/features/screens/saved_courses_screen.dart';
-import 'package:careerclaritycompanion/features/screens/skill_up_screen.dart';
+import 'package:careerclaritycompanion/features/screens/milestone_screen.dart';
+import 'package:careerclaritycompanion/features/screens/home/home_screen.dart';
+import 'package:careerclaritycompanion/features/screens/profile/profile_screens.dart';
+import 'package:careerclaritycompanion/features/screens/saved/saved_courses_screen.dart';
+import 'package:careerclaritycompanion/features/screens/skill_up/skill_up_screen.dart';
 import 'package:careerclaritycompanion/graggable_fab.dart';
 import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -39,7 +40,7 @@ class _MainScreenState extends State<MainScreen> {
   // Pages list
   final List<Widget> _pages = [
     SavedCoursesPage(),
-    const PlaceholderScreen(title: 'Milestones'),
+    MilestonePage(),
     HomePage(),
     SkillUpScreen(),
     ProfileScreen(),
@@ -52,7 +53,6 @@ class _MainScreenState extends State<MainScreen> {
       body: Stack(
         children: [
           IndexedStack(index: _currentIndex, children: _pages),
-          const DraggableFab(), // floating widget above all
         ],
       ),
 
@@ -60,9 +60,9 @@ class _MainScreenState extends State<MainScreen> {
       bottomNavigationBar: ConvexAppBar(
         height: 60,
         style: TabStyle.reactCircle,
-        backgroundColor: Colors.white,
-        activeColor: Theme.of(context).colorScheme.secondary,
-        color: Theme.of(context).colorScheme.secondary,
+        backgroundColor: const Color(0xFF42382D),
+        activeColor: Colors.white,
+        color: Colors.white,
 
         items: [
           TabItem(icon: Icons.bookmark_added_outlined, title: 'Saved'),
