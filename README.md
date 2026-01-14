@@ -1,40 +1,39 @@
- 
-## 1️⃣ TrendEra – Smart E-Commerce Application
+
+## 2️⃣ C-Cube – Clarity Career Companion
 
 ### 📌 Project Summary
 
-| Field            | Details                       |
-| ---------------- | ----------------------------- |
-| Category         | E-Commerce / Mobile App       |
-| Platform         | Flutter (Android / Web Ready) |
-| Auth             | Google OAuth                  |
-| Architecture     | MVP                           |
-| State Management | Riverpod                      |
+| Field       | Details                             |
+| ----------- | ----------------------------------- |
+| Category    | Career Guidance Platform            |
+| Platform    | Flutter                             |
+| Auth        | Google OAuth (College Domain Based) |
+| API         | Rapid API                           |
+| Achievement | Hackathon – 3rd Prize               |
 
 ### 🧠 Description
 
-**TrendEra** is a modern e-commerce application designed to deliver a seamless and intelligent shopping experience. The app integrates AI-powered image search to help users find products visually while maintaining a scalable and secure architecture.
+**C-Cube** is a smart career companion that helps students choose suitable career paths based on their domain. The platform enforces college-specific access using email domain validation and provides leaderboard-based motivation.
 
 ### ✨ Features
 
-* Product browsing and checkout flow
-* Role-based authentication (Admin / User)
-* AI image search using **Gemini API**
-* Optimized state handling with Riverpod
-* Secure cloud-based image storage
+* Domain-based career recommendations
+* Course, internship & project suggestions
+* College-wise user segregation
+* Leaderboards with milestone points
+* Secure login using college email only
 
 ### 🛠 Technology Stack
 
-| Layer    | Tools                   |
-| -------- | ----------------------- |
-| Frontend | Flutter                 |
-| State    | Riverpod                |
-| Auth     | Firebase Authentication |
-| AI       | Gemini API              |
-| Storage  | Cloudinary              |
+| Layer    | Tools        |
+| -------- | ------------ |
+| Frontend | Flutter      |
+| Backend  | Firebase     |
+| API      | Rapid API    |
+| Auth     | Google OAuth |
 
-### 🖼 Preview
+### 🎥 Preview
 
-![TrendEra](https://res.cloudinary.com/dzg4kohus/image/upload/v1768329789/2_cav9yf.png)
+[C-Cube Demo Video](https://res.cloudinary.com/dzg4kohus/video/upload/v1768329811/c_cube_model_vedio_whqda9.mp4)
 
 ---
